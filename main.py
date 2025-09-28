@@ -1,6 +1,12 @@
 import os
 import logging
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters
+)
 
 # Настройка логирования
 logging.basicConfig(
@@ -14,7 +20,8 @@ TOKEN = os.environ.get("BOT_TOKEN")
 DISCORD_LINK = "https://discord.gg/xesWFVH59m"
 TIKTOK_LINK = "https://www.tiktok.com/@jordjostar52"
 
-async def start_command(update, context):
+# Команды
+async def start_command(update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "👋 Привет! Я бот для приглашений\n\n"
         "📋 Команды:\n"
@@ -23,13 +30,13 @@ async def start_command(update, context):
         "⚡ Напиши любое сообщение для получения ссылок!"
     )
 
-async def discord_command(update, context):
+async def discord_command(update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"🎮 Discord: {DISCORD_LINK}")
 
-async def tiktok_command(update, context):
+async def tiktok_command(update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"🎵 TikTok: {TIKTOK_LINK}")
 
-async def handle_message(update, context):
+async def handle_message(update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.message.from_user.first_name
     await update.message.reply_text(
         f"🎉 Привет, {user_name}!\n\n"
@@ -38,25 +45,26 @@ async def handle_message(update, context):
         f"🎵 TikTok: {TIKTOK_LINK}"
     )
 
+# Основная функция
 def main():
     logger.info("🚀 Starting Telegram Bot on Render...")
     
     if not TOKEN:
         logger.error("❌ BOT_TOKEN not found in environment variables")
         return
-    
-    # Создаем Application
-    application = Application.builder().token(TOKEN).build()
-    
+
+    # Создаем Application через ApplicationBuilder
+    application = ApplicationBuilder().token(TOKEN).build()
+
     # Добавляем обработчики
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("discord", discord_command))
     application.add_handler(CommandHandler("tiktok", tiktok_command))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    
+
     logger.info("✅ Bot configured successfully")
     logger.info("🤖 Starting polling...")
-    
+
     # Запускаем бота
     application.run_polling()
 
